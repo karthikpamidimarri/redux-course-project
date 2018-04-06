@@ -6,10 +6,25 @@
 </head>
 
 <body>
+    <div>
+        <h1>Todo List</h1>
+        <input id='todo' type="text" placeholder="Add Todo"/>
+        <button id="todoBtn">Add Todo</button>
+        <ul id='todos'></ul>
+    </div>
 
-
+    <div>
+        <h1>Goal</h1>
+        <input id='goal' type="text" placeholder="Add Goal"/>
+        <button id="goalBtn">Add Goal</button>
+        <ul id='goals'></ul>
+    </div>
 
     <script type="text/javascript">
+
+        function generateId() {
+            return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+        }
         // Library code
         function createStore (reducer) {
             // The store should have four parts
@@ -142,7 +157,7 @@
             id: 1,
             name: 'Wash the car',
             complete: false
-        }))
+        }));
 
         store.dispatch(addTodoAction({
             id: 2,
@@ -166,6 +181,37 @@
         }));
 
         store.dispatch(removeGoalAction(0));
+        //DOM code
+        function addTodo() {
+            const input = document.getElementById('todo');
+            const name = input.value;
+            input.value ='';
+
+
+            store.dispatch(addTodoAction({
+                id: generateId(),
+                name,
+                complete: false
+            }))
+        }
+
+        function addgoal() {
+            const input = document.getElementById('goal');
+            const name = input.value;
+            input.value ='';
+
+
+            store.dispatch(addGoalAction({
+                id: generateId(),
+                name
+            }))
+        }
+
+        document.getElementById('todoBtn')
+            .addEventListener('click', addTodo);
+
+        document.getElementById('goalBtn')
+            .addEventListener('click', addgoal);
     </script>
 </body>
 </html>
