@@ -129,9 +129,20 @@
         }
     }
 
+    function loading(state = true, action) {
+        switch (action.type){
+            case RECEIVE_DATA:
+                return false
+            default :
+                return state
+
+        }
+    }
+
     const store = Redux.createStore(Redux.combineReducers({
         todos,
         goals,
+        loading,
     }), Redux.applyMiddleware(checker, logger));
 
     store.subscribe(() => {
@@ -169,7 +180,10 @@
             }))
         };
         removeItem = (todo) => {
-            this.props.store.dispatch(removeTodoAction(todo.id))
+            return API.deleteTodo(todo.id)
+                .then(() => {
+                   this.props.store.dispatch(removeTodoAction(todo.id));
+                });
         };
 
         toggleItem = (id) => {
@@ -246,8 +260,11 @@
         render() {
             debugger;
             const { store } = this.props;
-            const { todos, goals } = store.getState();
+            const { todos, goals, loading } = store.getState();
 
+            if(loading === true){
+                return <div>Loading...</div>
+            }
             return (
                 <div>
                     <Todos todos={todos} store={store} />
