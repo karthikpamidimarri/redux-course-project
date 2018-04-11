@@ -6,22 +6,11 @@
     <script src='https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js'></script>
     <script src='https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js'></script>
     <script src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js'></script>
+    <script src='https://tylermcginnis.com/goals-todos-api/index.js'></script>
+
 </head>
 <body>
-<div>
-    <h1>Todo List</h1>
-    <input id='todo' type='text' placeholder="Add Todo">
-    <button id='todoBtn'>Add Todo</button>
-    <ul id='todos'></ul>
-</div>
-<div>
-    <h1>Goals</h1>
-    <input id='goal' type='text' placeholder='Add Goal' />
-    <button id='goalBtn'>Add Goal</button>
-    <ul id='goals'></ul>
-</div>
 
-<hr />
 
 <div id='app'></div>
 
@@ -31,44 +20,53 @@
     }
 
     // App Code
-    const ADD_TODO = 'ADD_TODO'
-    const REMOVE_TODO = 'REMOVE_TODO'
-    const TOGGLE_TODO = 'TOGGLE_TODO'
-    const ADD_GOAL = 'ADD_GOAL'
-    const REMOVE_GOAL = 'REMOVE_GOAL'
+    const ADD_TODO = 'ADD_TODO';
+    const REMOVE_TODO = 'REMOVE_TODO';
+    const TOGGLE_TODO = 'TOGGLE_TODO';
+    const ADD_GOAL = 'ADD_GOAL';
+    const REMOVE_GOAL = 'REMOVE_GOAL';
+    const RECEIVE_DATA = 'RECEIVE_DATA';
 
     function addTodoAction (todo) {
         return {
             type: ADD_TODO,
-            todo,
+            todo
         }
     }
 
     function removeTodoAction (id) {
         return {
             type: REMOVE_TODO,
-            id,
+            id
         }
     }
 
     function toggleTodoAction (id) {
         return {
             type: TOGGLE_TODO,
-            id,
+            id
         }
     }
 
     function addGoalAction (goal) {
         return {
             type: ADD_GOAL,
-            goal,
+            goal
         }
     }
 
     function removeGoalAction (id) {
         return {
             type: REMOVE_GOAL,
-            id,
+            id
+        }
+    }
+
+    function receiveDataAction(todos, goals) {
+        return{
+            type:RECEIVE_DATA,
+            todos,
+            goals
         }
     }
 
@@ -91,11 +89,11 @@
     }
 
     const logger = (store) => (next) => (action) => {
-        console.group(action.type)
-        console.log('The action: ', action)
-        const result = next(action)
-        console.log('The new state: ', store.getState())
-        console.groupEnd()
+        console.group(action.type);
+        console.log('The action: ', action);
+        const result = next(action);
+        console.log('The new state: ', store.getState());
+        console.groupEnd();
         return result
     }
 
@@ -103,13 +101,14 @@
     function todos (state = [], action) {
         switch(action.type) {
             case ADD_TODO :
-                return state.concat([action.todo])
+                return state.concat([action.todo]);
             case REMOVE_TODO :
-                return state.filter((todo) => todo.id !== action.id)
+                return state.filter((todo) => todo.id !== action.id);
             case TOGGLE_TODO :
                 return state.map((todo) => todo.id !== action.id ? todo :
-                    Object.assign({}, todo, {complete: !todo.complete})
-            )
+                    Object.assign({}, todo, {complete: !todo.complete}));
+            case RECEIVE_DATA:
+                return action.todos
             default :
                 return state
         }
@@ -118,9 +117,13 @@
     function goals (state = [], action) {
         switch(action.type) {
             case ADD_GOAL :
-                return state.concat([action.goal])
+                return state.concat([action.goal]);
+
             case REMOVE_GOAL :
                 return state.filter((goal) => goal.id !== action.id)
+
+            case RECEIVE_DATA:
+                return action.goals
             default :
                 return state
         }
@@ -129,90 +132,12 @@
     const store = Redux.createStore(Redux.combineReducers({
         todos,
         goals,
-    }), Redux.applyMiddleware(checker, logger))
+    }), Redux.applyMiddleware(checker, logger));
 
     store.subscribe(() => {
         const { goals, todos } = store.getState()
-
-        document.getElementById('goals').innerHTML = ''
-    document.getElementById('todos').innerHTML = ''
-
-    goals.forEach(addGoalToDOM)
-    todos.forEach(addTodoToDOM)
     })
 
-    // DOM code
-    function createRemoveButton (onClick) {
-        const removeBtn = document.createElement('button')
-        removeBtn.innerHTML = 'X'
-        removeBtn.addEventListener('click', onClick)
-
-        return removeBtn
-    }
-
-    function addTodoToDOM (todo) {
-        const node = document.createElement('li')
-        const text = document.createTextNode(todo.name)
-
-        const removeBtn = createRemoveButton(() => {
-            store.dispatch(removeTodoAction(todo.id))
-    })
-
-        node.appendChild(text)
-        node.appendChild(removeBtn)
-
-        node.style.textDecoration = todo.complete ? 'line-through' : 'none'
-        node.addEventListener('click', () => {
-            store.dispatch(toggleTodoAction(todo.id))
-    })
-
-        document.getElementById('todos')
-            .appendChild(node)
-    }
-
-    function addGoalToDOM (goal) {
-        const node = document.createElement('li')
-        const text = document.createTextNode(goal.name)
-
-        const removeBtn = createRemoveButton(() => {
-            store.dispatch(removeGoalAction(goal.id))
-    })
-
-        node.appendChild(text)
-        node.appendChild(removeBtn)
-
-        document.getElementById('goals')
-            .appendChild(node)
-    }
-
-    function addTodo () {
-        const input = document.getElementById('todo')
-        const name = input.value
-        input.value = ''
-
-        store.dispatch(addTodoAction({
-            id: generateId(),
-            name,
-            complete: false,
-        }))
-    }
-
-    function addGoal () {
-        const input = document.getElementById('goal')
-        const name = input.value
-        input.value = ''
-
-        store.dispatch(addGoalAction({
-            id: generateId(),
-            name,
-        }))
-    }
-
-    document.getElementById('todoBtn')
-        .addEventListener('click', addTodo)
-
-    document.getElementById('goalBtn')
-        .addEventListener('click', addGoal)
 </script>
 
 <script type="text/babel">
@@ -233,16 +158,16 @@
 
     class Todos extends React.Component {
         addItem = (e) => {
-            e.preventDefault()
-            const name = this.input.value
-            this.input.value = ''
+            e.preventDefault();
+            const name = this.input.value;
+            this.input.value = '';
 
             this.props.store.dispatch(addTodoAction({
                 id: generateId(),
                 name,
                 complete: false,
             }))
-        }
+        };
         removeItem = (todo) => {
             this.props.store.dispatch(removeTodoAction(todo.id))
         };
@@ -273,18 +198,18 @@
 
     class Goals extends React.Component {
         addItem = (e) => {
-            e.preventDefault()
-            const name = this.input.value
-            this.input.value = ''
+            e.preventDefault();
+            const name = this.input.value;
+            this.input.value = '';
 
             this.props.store.dispatch(addGoalAction({
                 id: generateId(),
                 name,
             }))
-        }
+        };
         removeItem = (goal) => {
             this.props.store.dispatch(removeGoalAction(goal.id))
-        }
+        };
         render() {
             return (
                 <div>
@@ -295,7 +220,10 @@
                         ref={(input) => this.input = input}
                     />
                     <button onClick={this.addItem}>Add Goal</button>
-
+                    <List
+                        items={this.props.goals}
+                        remove={this.removeItem}
+                    />
 
                 </div>
             )
@@ -303,14 +231,22 @@
     }
 
     class App extends React.Component {
-        componentDidMount () {
-            const { store } = this.props
 
+        componentDidMount () {
+            const { store } = this.props;
+
+            Promise.all([
+                API.fetchTodos(),
+                API.fetchGoals(),
+            ]).then(([todos,goals])=>{
+                store.dispatch(receiveDataAction(todos,goals))
+            });
             store.subscribe(() => this.forceUpdate())
         }
         render() {
-            const { store } = this.props
-            const { todos, goals } = store.getState()
+            debugger;
+            const { store } = this.props;
+            const { todos, goals } = store.getState();
 
             return (
                 <div>
@@ -327,5 +263,4 @@
     )
 </script>
 </body>
-</html>
 </html>
